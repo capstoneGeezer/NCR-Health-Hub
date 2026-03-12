@@ -30,7 +30,7 @@ body{
     box-shadow:0 4px 12px rgba(0,0,0,0.08);
 }
 
-/* HEADER SECTION */
+/* ================= HEADER SECTION ================= */
 .header-section{
     background:linear-gradient(to right,#007acc,#66b2ff,#007acc);
     color:white;
@@ -44,7 +44,7 @@ body{
     align-items:center;
     gap:20px;
     padding:15px 20px;
-    flex-wrap: nowrap;
+    flex-wrap:wrap;
 }
 
 .header-logo img{
@@ -75,7 +75,7 @@ body{
     font-weight:normal;
 }
 
-/* CITIES & MUNICIPALITIES SECTIONS */
+/* ================= CITIES & MUNICIPALITIES SECTIONS ================= */
 .cities-section,
 .municipalities-section{
     width:98%;
@@ -96,7 +96,7 @@ body{
     color:#004466;
 }
 
-/* LIST */
+/* ================= LIST ================= */
 ul{
     padding-left:0;
     list-style-type:none;
@@ -161,12 +161,14 @@ li{
     max-height:1500px;
 }
 
+/* ================= ACTIVE STATE FIX ================= */
 .city-title:active,
 .nested-title:active{
     transform:scale(0.97);
+    -webkit-tap-highlight-color: transparent; /* prevents stuck highlight on mobile */
 }
 
-/* CONTACT INFO */
+/* ================= CONTACT INFO ================= */
 .hotline-title{
     font-weight:bold;
     display:block;
@@ -193,7 +195,7 @@ li{
     transform:scale(1.1);
 }
 
-/* RESPONSIVE */
+/* ================= RESPONSIVE ================= */
 @media (max-width:900px){
     .header-logo img{
         width:80px;
@@ -224,7 +226,7 @@ li{
 
 <div class="container">
 
-<!-- HEADER SECTION -->
+<!-- ================= HEADER SECTION ================= -->
 <div class="section header-section">
     <div class="header-content">
         <div class="header-logo">
@@ -237,13 +239,13 @@ li{
     </div>
 </div>
 
-<!-- CITIES SECTION -->
+<!-- ================= CITIES SECTION ================= -->
 <div class="cities-section">
 <h2>Cities</h2>
 <ul id="cities-list"></ul>
 </div>
 
-<!-- MUNICIPALITY SECTION -->
+<!-- ================= MUNICIPALITY SECTION ================= -->
 <div class="municipalities-section">
 <h2>Municipality</h2>
 <ul id="municipalities-list"></ul>
@@ -267,6 +269,8 @@ function attachNestedListeners(container){
             if(!content) return;
             container.querySelectorAll('.nested-content').forEach(n=>{ if(n !== content) n.classList.remove('open'); });
             content.classList.toggle('open');
+            // Reset active transform on mobile
+            this.style.transform = 'scale(1)';
         });
     });
 }
@@ -297,13 +301,16 @@ function populateList(fileArray, listElement, folderName){
         li.innerHTML = `<div class="city-title">${file.replace('.html','')}</div><div class="dropdown-content"></div>`;
         const title = li.querySelector('.city-title');
         const dropdown = li.querySelector('.dropdown-content');
+
         title.addEventListener('click', function(e){
             e.stopPropagation();
             listElement.querySelectorAll('.dropdown-content').forEach(d=>{ if(d!==dropdown) collapseDropdown(d); });
             if(dropdown.dataset.loaded==='true'){
                 dropdown.classList.contains('open') ? collapseDropdown(dropdown) : expandDropdown(dropdown);
+                title.style.transform='scale(1)'; // reset active state
                 return;
             }
+
             fetch(folderName + '/' + file)
             .then(res=>{ if(!res.ok) throw new Error('File not found'); return res.text(); })
             .then(html=>{
@@ -311,13 +318,16 @@ function populateList(fileArray, listElement, folderName){
                 dropdown.dataset.loaded='true';
                 attachNestedListeners(dropdown);
                 expandDropdown(dropdown);
+                title.style.transform='scale(1)'; // reset active state
             })
             .catch(err=>{
                 console.error('Loading error:', folderName+'/'+file, err);
                 dropdown.innerHTML="<p>Error loading data.</p>";
                 expandDropdown(dropdown);
+                title.style.transform='scale(1)'; // reset active state
             });
         });
+
         listElement.appendChild(li);
     });
 }
